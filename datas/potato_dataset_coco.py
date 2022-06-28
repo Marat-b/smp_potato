@@ -39,8 +39,8 @@ class PotatoSample(BaseDataset):
             smpl["image"] = self.transforms_image(smpl["image"])
         if self.transforms_mask:
             smpl["mask"] = self.transforms_mask(smpl["mask"])
-        # print(f'self.smpl(index)["image"]={smpl["image"].shape}')
-        # print(f'self.smpl(mask)["image"]={smpl["mask"].shape}')
+        print(f'self.smpl(index)["image"]={smpl["image"].shape}')
+        print(f'self.smpl(mask)["image"]={smpl["mask"].shape}')
         # sub_sample['image'].shape = (c, h, w)
         return sub_sample
 
