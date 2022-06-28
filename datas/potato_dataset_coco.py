@@ -39,10 +39,10 @@ class PotatoSample(BaseDataset):
             smpl["image"] = self.transforms_image(smpl["image"])
         if self.transforms_mask:
             smpl["mask"] = self.transforms_mask(smpl["mask"])
-        print(f'self.smpl(index)["image"]={smpl["image"].shape}')
-        print(f'self.smpl(mask)["image"]={smpl["mask"].shape}')
+        # print(f'self.smpl(index)["image"]={smpl["image"].shape}')
+        # print(f'self.smpl(mask)["image"]={smpl["mask"].shape}')
         # sub_sample['image'].shape = (c, h, w)
-        return sub_sample
+        return smpl["image"], smpl["mask"]
 
     def __len__(self):
         # print(f'len(self.img_segments)={len(self.img_segments)}')
@@ -264,13 +264,15 @@ if __name__ == "__main__":
     )
     ps = PotatoSample([
         # [['../datasets/potato_set15_coco.json', '../datasets/set15'],
-        ('../datasets/potato_set16_coco.json', '../datasets/set16')],
-        transforms_image=data_transforms_image,
-        transforms_mask=data_transforms_mask
+        ('../datasets/potato_set37_coco.json', '../datasets/set37')],
+        # transforms_image=data_transforms_image,
+        # transforms_mask=data_transforms_mask
         )
     # ps.create_dataset()
     print(f'len(ps)={len(ps)}')
     # ps.get_sample(0)
-    for i in range(len(ps)):
-        print(f'i={i}')
-        s = ps[i]
+    s = ps[1]
+    print(s)
+    # for i in range(len(ps)):
+    #     print(f'i={i}')
+    #     s = ps[i]
