@@ -122,7 +122,8 @@ class PotatoSample(BaseDataset):
     def get_image(self, images_path, file_name):
         if Path(os.path.join(images_path, file_name)).exists():
             image = Image.open(os.path.join(images_path, file_name))
-            image = np.asarray(self._scale(np.asarray(image), self.new_shape))
+            # image = np.asarray(self._scale(np.asarray(image), self.new_shape))
+            image = np.asarray(image)
             # shape = image.shape
             # print(f'get_image image.shape={shape}')
             # image = np.transpose(image, (2, 0, 1))
@@ -136,8 +137,10 @@ class PotatoSample(BaseDataset):
         img_segment = img_segment[0]
         # print(f'img_segment={img_segment}')
         image = self.get_image(img_segment['path'], img_segment['file_name'])
+        h, w = image.shape[:-1]
         if image is not None:
-            bitmasks = np.zeros((len(self.cat_ids), self.new_shape[0], self.new_shape[1]), dtype='bool')
+            # bitmasks = np.zeros((len(self.cat_ids), self.new_shape[0], self.new_shape[1]), dtype='bool')
+            bitmasks = np.zeros((len(self.cat_ids), h, w), dtype='bool')
             # bitmasks = np.zeros((1, self.new_shape[0], self.new_shape[1]), dtype='int32')
             # print(f'empty bitmasks.shape={bitmasks.shape}')
             for img_to_segment in img_segment['annotations']:
@@ -152,7 +155,8 @@ class PotatoSample(BaseDataset):
                         )
                         # print(f'max old bitmask={np.max(bitmask)}')
                         # bitmask = bitmask * cat
-                        bitmasks[cat] += self._scale(bitmask, self.new_shape)
+                        # bitmasks[cat - 1] += self._scale(bitmask, self.new_shape)
+                        bitmasks[cat - 1] += bitmask
                         # bitmasks[0] += self._scale(bitmask, self.new_shape)
                         # print(f'max new bitmask={np.max(self._scale(bitmask, new_shape[0], new_shape[1]))}')
                         # print(f'bitmask.shape={bitmask.shape}')
@@ -160,50 +164,7 @@ class PotatoSample(BaseDataset):
                     # cv2_imshow(np.transpose(bitmasks, (1, 2, 0)).astype('uint8'), 'bitmasks cat={}'.format(cat))
             # for j in range(1, 4):
             #     cv2_imshow(bitmasks[j], 'bitmasks{}'.format(j))
-            bitmasks = np.transpose(bitmasks, (1, 2, 0))
-
-            # print(f'full bitmasks.shape={bitmasks.shape}')
-            sample['image'] = image
-            sample['mask'] = bitmasks.astype('float')
-            # print(f'self.sample={self.sample}')
-            # print(f"image={image.dtype}")
-            # print(f"bitmasks={bitmasks.astype('float').dtype}")
-            # print(f"image.shape={np.asarray(sample['image']).shape}")
-            # print(f"mask.shape={np.asarray(sample['mask']).shape}")
-
-            # print('sample is loaded...')
-        # self.sample = sample
-        return sample
-
-    def get_mask_1class(self, img_segment):
-        sample = {}
-        img_segment = img_segment[0]
-        # print(f'img_segment={img_segment}')
-        image = self.get_image(img_segment['path'], img_segment['file_name'])
-        if image is not None:
-            bitmasks = np.zeros((len(self.cat_ids), self.new_shape[0], self.new_shape[1]), dtype='bool')
-            # bitmasks = np.zeros((1, self.new_shape[0], self.new_shape[1]), dtype='bool')
-            # print(f'empty bitmasks.shape={bitmasks.shape}')
-            for img_to_segment in img_segment['annotations']:
-                for cat in self.cat_ids:
-                    if img_to_segment['category_id'] == cat:
-                        # print(f'img_to_segment={img_to_segment}')
-                        # print(f'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-                        # print(f'cat={cat}')
-                        bitmask = self._polygons_to_bitmask(
-                            img_to_segment['segmentation'],
-                            img_segment['height'], img_segment['width']
-                        )
-                        # print(f'max old bitmask={np.max(bitmask)}')
-                        # bitmask = bitmask * 255
-                        bitmasks[cat - 1] += self._scale(bitmask, self.new_shape)
-                        # bitmasks[0] += self._scale(bitmask, self.new_shape)
-                        # print(f'max new bitmask={np.max(self._scale(bitmask, new_shape[0], new_shape[1]))}')
-                        # print(f'bitmask.shape={bitmask.shape}')
-                        # print(f'max bitmasks={np.max(bitmasks)}')
-                    # cv2_imshow(np.transpose(bitmasks, (1, 2, 0)).astype('uint8'), 'bitmasks cat={}'.format(cat))
-            # for j in range(1, 4):
-            #     cv2_imshow(bitmasks[j], 'bitmasks{}'.format(j))
+            # bitmasks = self._scale(bitmasks, self.new_shape)
             bitmasks = np.transpose(bitmasks, (1, 2, 0))
 
             # print(f'full bitmasks.shape={bitmasks.shape}')
@@ -219,10 +180,54 @@ class PotatoSample(BaseDataset):
         # self.sample = sample
         return sample
 
+    # def get_mask_1class(self, img_segment):
+    #     sample = {}
+    #     img_segment = img_segment[0]
+    #     # print(f'img_segment={img_segment}')
+    #     image = self.get_image(img_segment['path'], img_segment['file_name'])
+    #     if image is not None:
+    #         bitmasks = np.zeros((len(self.cat_ids), self.new_shape[0], self.new_shape[1]), dtype='bool')
+    #         # bitmasks = np.zeros((1, self.new_shape[0], self.new_shape[1]), dtype='bool')
+    #         # print(f'empty bitmasks.shape={bitmasks.shape}')
+    #         for img_to_segment in img_segment['annotations']:
+    #             for cat in self.cat_ids:
+    #                 if img_to_segment['category_id'] == cat:
+    #                     # print(f'img_to_segment={img_to_segment}')
+    #                     # print(f'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+    #                     # print(f'cat={cat}')
+    #                     bitmask = self._polygons_to_bitmask(
+    #                         img_to_segment['segmentation'],
+    #                         img_segment['height'], img_segment['width']
+    #                     )
+    #                     # print(f'max old bitmask={np.max(bitmask)}')
+    #                     # bitmask = bitmask * 255
+    #                     bitmasks[cat - 1] += self._scale(bitmask, self.new_shape)
+    #                     # bitmasks[0] += self._scale(bitmask, self.new_shape)
+    #                     # print(f'max new bitmask={np.max(self._scale(bitmask, new_shape[0], new_shape[1]))}')
+    #                     # print(f'bitmask.shape={bitmask.shape}')
+    #                     # print(f'max bitmasks={np.max(bitmasks)}')
+    #                 # cv2_imshow(np.transpose(bitmasks, (1, 2, 0)).astype('uint8'), 'bitmasks cat={}'.format(cat))
+    #         # for j in range(1, 4):
+    #         #     cv2_imshow(bitmasks[j], 'bitmasks{}'.format(j))
+    #         bitmasks = np.transpose(bitmasks, (1, 2, 0))
+    #
+    #         # print(f'full bitmasks.shape={bitmasks.shape}')
+    #         sample['image'] = image
+    #         sample['mask'] = bitmasks.astype('float32')
+    #         # print(f'self.sample={self.sample}')
+    #         # print(f"image={image.dtype}")
+    #         # print(f"bitmasks={bitmasks.astype('float').dtype}")
+    #         # print(f"image.shape={np.asarray(sample['image']).shape}")
+    #         # print(f"mask.shape={np.asarray(sample['mask']).shape}")
+    #
+    #         # print('sample is loaded...')
+    #     # self.sample = sample
+    #     return sample
+
     def get_sample(self, index):
         img_segment = self.img_segments[index]
         # print(f'img_segment={img_segment}')
-        sample = self.get_mask_1class(img_segment)
+        sample = self.get_mask(img_segment)
         return sample
 
     def _polygons_to_bitmask(self, polygons: List[np.ndarray], height: int, width: int) -> np.ndarray:
@@ -241,27 +246,28 @@ class PotatoSample(BaseDataset):
         rle = mask_util.merge(rles)
         return mask_util.decode(rle).astype(np.bool_)
 
-    def _scale(self, im, n_shape):
-        """
-        n_shape[0] = n_rows, n_shape[1] = n_columns
-        :param im:
-        :type im:
-        :return:
-        :rtype:
-        """
-        n_rows0 = len(im)  # source number of rows
-        n_columns0 = len(im[0])  # source number of columns
-        return [[im[int(n_rows0 * r / n_shape[0])][int(n_columns0 * c / n_shape[1])]
-                 for c in range(n_shape[1])] for r in range(n_shape[0])]
+    # def _scale(self, im, n_shape):
+    #     """
+    #     n_shape[0] = n_rows, n_shape[1] = n_columns
+    #     :param im:
+    #     :type im:
+    #     :return:
+    #     :rtype:
+    #     """
+    #     n_rows0 = len(im)  # source number of rows
+    #     n_columns0 = len(im[0])  # source number of columns
+    #     return [[im[int(n_rows0 * r / n_shape[0])][int(n_columns0 * c / n_shape[1])]
+    #              for c in range(n_shape[1])] for r in range(n_shape[0])]
 
 
 if __name__ == "__main__":
     data_transforms_image = transforms.Compose(
         [transforms.ToTensor(),
-         transforms.Normalize(
-             mean=[0.485, 0.456, 0.406],
-             std=[0.229, 0.224, 0.225]
-         )
+         transforms.Resize(size=(256, 256))
+         # transforms.Normalize(
+         #     mean=[0.485, 0.456, 0.406],
+         #     std=[0.229, 0.224, 0.225]
+         # )
          ]
     )
 
@@ -271,15 +277,16 @@ if __name__ == "__main__":
     )
     ps = PotatoSample([
         # [['../datasets/potato_set15_coco.json', '../datasets/set15'],
-        ('../datasets/potato_set37_coco.json', '../datasets/set37')],
+        ('../datasets/potato_set6_coco.json', '../datasets/set6')],
         # transforms_image=data_transforms_image,
         # transforms_mask=data_transforms_mask
         )
     # ps.create_dataset()
     print(f'len(ps)={len(ps)}')
     # ps.get_sample(0)
-    s = ps[1]
-    print(s)
+    image, mask = ps[0]
+    image = data_transforms_image(image)
+    print(image.shape, mask.shape)
     # for i in range(len(ps)):
     #     print(f'i={i}')
     #     s = ps[i]
