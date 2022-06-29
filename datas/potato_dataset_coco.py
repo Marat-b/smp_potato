@@ -12,8 +12,8 @@ from tqdm import tqdm
 
 
 class PotatoSample(BaseDataset):
-    def __init__(self, data_instances=[], new_shape=(512, 512), transforms_image: Optional[Callable] = None,
-                 transforms_mask: Optional[Callable] = None):
+    def __init__(self, data_instances=[], new_shape=(512, 512), augmentation: Optional[Callable] = None,
+                 preprocessing: Optional[Callable] = None):
         # if data_instances is None:
         #     data_instances = []
         # print(f'init data_instances={data_instances}, len={len(data_instances)}')
@@ -25,24 +25,31 @@ class PotatoSample(BaseDataset):
         self.new_shape = new_shape
         self.sample = {'image': [], 'mask': []}
         self.sub_sample = self.sample.copy()
-        self.transforms_image = transforms_image
-        self.transforms_mask = transforms_mask
+        # self.transforms_image = transforms_image
+        # self.transforms_mask = transforms_mask
+        self.augmentation = augmentation
+        self.preprocessing = preprocessing
         self.create_dataset()
 
     def __getitem__(self, index):
-        sub_sample = {}
+        # sub_sample = {}
         smpl = self.get_sample(index)
         # print(f'smpl["image"].shape={smpl["image"].shape}')
         # print(f'smpl["mask"].shape={smpl["mask"].shape}')
         # smpl['image'].shape = (h, w ,c) type - ndarray
-        if self.transforms_image:
-            smpl["image"] = self.transforms_image(smpl["image"])
-        if self.transforms_mask:
-            smpl["mask"] = self.transforms_mask(smpl["mask"])
+        image = smpl['image']
+        mask = smpl['mask']
+        if self.augmentation:
+            sample = self.augmentation(image=image, mask=mask)
+            image, mask = sample['image'], sample['mask']
+        if self.preprocessing:
+            sample = self.preprocessing(image=image, mask=mask)
+            image, mask = sample['image'], sample['mask']
+
         # print(f'self.smpl(index)["image"]={smpl["image"].shape}')
         # print(f'self.smpl(mask)["image"]={smpl["mask"].shape}')
         # sub_sample['image'].shape = (c, h, w)
-        return smpl["image"], smpl["mask"]
+        return image, mask
 
     def __len__(self):
         # print(f'len(self.img_segments)={len(self.img_segments)}')
