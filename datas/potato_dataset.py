@@ -53,6 +53,7 @@ class PotatoDataset(BaseDataset):
         mask = Image.open(self.masks_fps[i])
         image = np.array(image)
         mask = np.array(mask)[:, :, 0]
+        mask = np.expand_dims(mask, axis=2)
         # print(f'getitem mask={mask}')
 
         # extract certain classes from mask (e.g. cars)
