@@ -54,7 +54,6 @@ class PotatoDataset(BaseDataset):
         image = np.array(image)
         # mask = np.array(mask)
         mask = np.array(mask)[:, :, [0]]
-        mask = np.array(mask)[:, :, [0]]
         # mask = np.expand_dims(mask, axis=2)
         # print(f'getitem mask={mask}')
 
