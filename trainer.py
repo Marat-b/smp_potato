@@ -15,6 +15,9 @@ from datas.potato_dataset import PotatoDataset
 class Trainer:
     def __init__(self):
        self.classes = 8
+       self.activation = 'softmax'
+       self.encoder = 'resnet50'
+       self.encoder_weights = 'imagenet'
 
     def get_training_augmentation(self):
         train_transform = [
@@ -148,6 +151,10 @@ class Trainer:
             verbose=True,
         )
 
+    @property
+    def preprocessing_fn(self):
+        return smp.encoders.get_preprocessing_fn(self.encoder, self.encoder_weights)
+
 
     def train(self):
         max_score = 0
@@ -180,17 +187,17 @@ class Trainer:
         self.validate_images_path = args.validate_images_path
         self.epoch = args.epoch
         # resume = args.resume
-        ENCODER = 'resnet50'
-        ENCODER_WEIGHTS = 'imagenet'
-        ACTIVATION = 'softmax'
+        # ENCODER = 'resnet50'
+        # ENCODER_WEIGHTS = 'imagenet'
+        # ACTIVATION = 'softmax'
         self.device = args.device
         self.model = smp.DeepLabV3(
-            encoder_name=ENCODER,
-            encoder_weights=ENCODER_WEIGHTS,
+            encoder_name=self.encoder,
+            encoder_weights=self.encoder_weights,
             classes=self.classes,
-            activation=ACTIVATION,
+            activation=self.activation,
         )
-        self.preprocessing_fn = smp.encoders.get_preprocessing_fn(ENCODER, ENCODER_WEIGHTS)
+        # self.preprocessing_fn = smp.encoders.get_preprocessing_fn(ENCODER, ENCODER_WEIGHTS)
         # if resume:
         #     max_iter = input('Input max iteration (max_iter):')
         #     lr = input('Input learning rate (lr):')
