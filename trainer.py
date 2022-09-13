@@ -148,6 +148,7 @@ class Trainer:
             verbose=True,
         )
 
+
     def train(self):
         max_score = 0
         for i in range(0, self.epoch):
@@ -235,7 +236,7 @@ if __name__ == '__main__':
         help=""
     )
     parser.add_argument(
-        "--output_folder",
+        "-o", "--output_folder",
         type=str,
         dest="output_folder",
         required=False,
