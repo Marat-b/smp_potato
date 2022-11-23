@@ -286,6 +286,7 @@ if __name__ == "__main__":
     # ps.get_sample(0)
     image, mask = ps[0]
     image = data_transforms_image(image)
+    mask = data_transforms_mask(mask)
     print(image.shape, mask.shape)
     # for i in range(len(ps)):
     #     print(f'i={i}')
